@@ -566,9 +566,38 @@ export default function Editor({
                     <Field label="Role" value={t.role} onChange={(v) => mutate((d) => (d.testimonials[i].role = v))} />
                     <Field label="Company" value={t.company} onChange={(v) => mutate((d) => (d.testimonials[i].company = v))} />
                   </div>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <Field label="Avatar URL (optional)" value={t.avatar || ""} onChange={(v) => mutate((d) => (d.testimonials[i].avatar = v))} />
+                  <div className="mt-3">
                     <Field label="LinkedIn URL (optional)" value={t.link || ""} onChange={(v) => mutate((d) => (d.testimonials[i].link = v))} />
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    <label className="block cursor-pointer rounded-lg border border-dashed border-line p-3 text-center text-sm text-ink-soft hover:border-ink hover:text-ink">
+                      {t.avatar ? "Photo attached — click to replace" : "⬆ Upload photo (optional — replaces the initials)"}
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          if (f.size > 800 * 1024) {
+                            alert("Image over 800 KB — use a smaller one");
+                            return;
+                          }
+                          const b64 = await fileToBase64(f);
+                          mutate((d) => (d.testimonials[i].avatar = b64));
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {t.avatar && (
+                      <button
+                        type="button"
+                        onClick={() => mutate((d) => (d.testimonials[i].avatar = undefined))}
+                        className="text-xs text-muted hover:text-accent-ink"
+                      >
+                        Remove photo
+                      </button>
+                    )}
                   </div>
                 </Card>
               ))}
