@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+:root {
+  --amber: #ffb703;
+  --amber-dim: rgba(255, 183, 3, 0.16);
+}
+
+:root[data-theme="light"],
+:root:not([data-theme="dark"]) {
+  --bg: #f4f1e8;
+  --ink: #121212;
+  --ink-soft: #6f6a60;
+  --muted: #6f6a60;
+  --line: rgba(18, 18, 18, 0.12);
+  --surface: #ffffff;
+  --glass-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.5));
+  --glass-line: rgba(18, 18, 18, 0.1);
+  --glass-top: rgba(255, 255, 255, 0.95);
+  --shadow: 0 30px 70px -40px rgba(30, 25, 10, 0.35);
+}
+
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --ink: #f5f2ea;
+  --ink-soft: #9b968b;
+  --muted: #9b968b;
+  --line: rgba(245, 242, 234, 0.14);
+  --surface: #0c0c0c;
+  --glass-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.022));
+  --glass-line: rgba(255, 255, 255, 0.14);
+  --glass-top: rgba(255, 255, 255, 0.28);
+  --shadow: 0 30px 70px -36px rgba(0, 0, 0, 0.9);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--amber);
+  --color-accent-ink: var(--amber);
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--amber);
+  color: #000;
+}
+
+/* ---------- glassmorphism ---------- */
+@utility glass {
+  @apply backdrop-blur-xl backdrop-saturate-150;
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--glass-top);
+}
+
+@utility glass-soft {
+  @apply backdrop-blur-lg backdrop-saturate-150;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+}
+
+@utility glass-dark {
+  @apply backdrop-blur-xl backdrop-saturate-150;
+  background: rgba(20, 19, 15, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Subtle entrance animation utility */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Marquee section dividers */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+/* Aurora background blobs */
+@keyframes aurora-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-12%, 14%);
+  }
+}
+@keyframes aurora-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(14%, -12%);
+  }
+}
+@keyframes aurora-c {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-10%, -10%);
+  }
+}
+
+/* "My World" dot-grid canvas background */
+.world-grid {
+  background-image: radial-gradient(rgba(255, 183, 3, 0.07) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+a,
+button {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* thin amber scrollbar, matching v8 */
+html {
+  scrollbar-color: var(--amber) var(--bg);
+  scrollbar-width: thin;
+}
+body::-webkit-scrollbar {
+  width: 10px;
+}
+body::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+body::-webkit-scrollbar-thumb {
+  background: var(--amber);
+  border-radius: 99px;
+  border: 2px solid var(--bg);
+}
