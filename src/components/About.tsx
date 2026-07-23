@@ -6,15 +6,22 @@ import { Content } from "@/lib/content";
 
 type Token = { text: string; emphasis: boolean; space: boolean };
 
+// Emphasized runs (*phrase*) are kept whole — they render as one continuous
+// highlight pill, not split word-by-word — while plain text is still split
+// into individual words for the per-word stagger reveal.
 function tokenize(raw: string): Token[] {
   const parts = raw.split(/(\*[^*]+\*)/g).filter((p) => p.length);
   const tokens: Token[] = [];
   for (const part of parts) {
     const isEm = part.startsWith("*") && part.endsWith("*");
     const text = isEm ? part.slice(1, -1) : part;
+    if (isEm) {
+      tokens.push({ text, emphasis: true, space: false });
+      continue;
+    }
     const words = text.split(/(\s+)/).filter((w) => w.length);
     for (const w of words) {
-      tokens.push({ text: w, emphasis: isEm, space: /^\s+$/.test(w) });
+      tokens.push({ text: w, emphasis: false, space: /^\s+$/.test(w) });
     }
   }
   return tokens;
@@ -29,12 +36,12 @@ function BigStatement({ raw }: { raw: string }) {
   return (
     <p
       ref={ref}
-      className="max-w-[1000px] text-[clamp(26px,4vw,52px)] leading-[1.16] font-extrabold tracking-tight"
+      className="max-w-[1000px] text-[clamp(26px,4vw,52px)] leading-[1.5] font-extrabold tracking-tight"
     >
       {tokens.map((t, i) => {
         if (t.space) return <span key={i}>{t.text}</span>;
         const idx = wordIndex++;
-        const word = (
+        const content = (
           <motion.span
             className="inline-block"
             initial={{ y: "100%" }}
@@ -44,9 +51,21 @@ function BigStatement({ raw }: { raw: string }) {
             {t.text}
           </motion.span>
         );
+        if (t.emphasis) {
+          return (
+            <span key={i} className="inline-block overflow-hidden align-bottom">
+              <span
+                className="rounded-md bg-accent px-2 py-0.5 text-black"
+                style={{ boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}
+              >
+                {content}
+              </span>
+            </span>
+          );
+        }
         return (
           <span key={i} className="inline-block overflow-hidden align-bottom">
-            {t.emphasis ? <em className="not-italic text-accent">{word}</em> : word}
+            {content}
           </span>
         );
       })}

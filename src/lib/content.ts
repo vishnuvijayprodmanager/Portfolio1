@@ -108,7 +108,8 @@ export const defaultContent: Content = {
     { value: "30%", label: "Lift in adoption rates" },
     { value: "6+", label: "Zero-to-one products shipped" },
   ],
-  aboutHeading: "I turn messy, ambiguous problems into products people actually use.",
+  aboutHeading:
+    "I take *messy*, *ambiguous problems* and turn them into *products that scale*. I move *fast in Figma*, I obsess over *impact*, and I'm always finding a *balance* between what *users love*, what *businesses need*, and what *engineers will actually build*.",
   aboutBody:
     "As a Product Manager at Edelweiss Life, I lead SaaS platforms from concept to launch — running stakeholder interviews and competitive analysis to define the roadmap, then driving the build with engineering and design. I specialise in CRMs, in-house distribution apps and custom dialer systems, and I care most about closing the loop between user feedback and what ships next.",
   projects: [
