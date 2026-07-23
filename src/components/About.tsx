@@ -41,31 +41,33 @@ function BigStatement({ raw }: { raw: string }) {
       {tokens.map((t, i) => {
         if (t.space) return <span key={i}>{t.text}</span>;
         const idx = wordIndex++;
-        const content = (
-          <motion.span
-            className="inline-block"
-            initial={{ y: "100%" }}
-            animate={inView ? { y: 0 } : undefined}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: idx * 0.035 }}
-          >
-            {t.text}
-          </motion.span>
-        );
         if (t.emphasis) {
+          // The whole pill (background + text) pops in together, timed with
+          // the surrounding word stagger, so the highlight never appears
+          // before there's text inside it.
           return (
-            <span key={i} className="inline-block overflow-hidden align-bottom">
-              <span
-                className="rounded-md bg-accent px-2 py-0.5 text-black"
-                style={{ boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}
-              >
-                {content}
-              </span>
-            </span>
+            <motion.span
+              key={i}
+              className="inline rounded-2xl bg-accent px-2.5 py-1 text-black"
+              style={{ boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={inView ? { opacity: 1, scale: 1 } : undefined}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: idx * 0.035 }}
+            >
+              {t.text}
+            </motion.span>
           );
         }
         return (
           <span key={i} className="inline-block overflow-hidden align-bottom">
-            {content}
+            <motion.span
+              className="inline-block"
+              initial={{ y: "100%" }}
+              animate={inView ? { y: 0 } : undefined}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: idx * 0.035 }}
+            >
+              {t.text}
+            </motion.span>
           </span>
         );
       })}
