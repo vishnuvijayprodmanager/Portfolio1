@@ -31,15 +31,48 @@ const themeScript = `
 })();
 `;
 
+const SITE_URL = "https://www.vishnuvijay.co.in";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { meta } = await getContent();
+  const title = `${meta.name} — ${meta.role}`;
+  const description = meta.tagline.replace(/\*/g, "");
+
   return {
-    title: `${meta.name} — ${meta.role}`,
-    description: meta.tagline,
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: title,
+      template: `%s — ${meta.name}`,
+    },
+    description,
+    keywords: [
+      meta.name,
+      meta.role,
+      "Product Manager portfolio",
+      "Product Management",
+      "SaaS product manager",
+      meta.location,
+    ],
+    authors: [{ name: meta.name }],
+    creator: meta.name,
+    alternates: { canonical: "/" },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
     openGraph: {
-      title: `${meta.name} — ${meta.role}`,
-      description: meta.tagline,
+      title,
+      description,
       type: "website",
+      url: SITE_URL,
+      siteName: meta.name,
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }

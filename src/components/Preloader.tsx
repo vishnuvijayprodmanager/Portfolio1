@@ -9,21 +9,26 @@ export default function Preloader() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (reduced) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reduced-motion preference is only known post-mount
+    // Only the first page load in a browser session pays for the full
+    // reveal animation — repeat navigations within the same session (and
+    // reduced-motion users) skip straight to the content.
+    const alreadySeen = sessionStorage.getItem("vv_preloaded");
+    if (reduced || alreadySeen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- first-visit state is only known post-mount
       setDone(true);
       return;
     }
+    sessionStorage.setItem("vv_preloaded", "1");
     document.body.style.overflow = "hidden";
     const controls = animate(0, 100, {
-      duration: 1.4,
+      duration: 0.9,
       ease: [0.4, 0, 0.2, 1],
       onUpdate: (v) => setCount(Math.round(v)),
       onComplete: () => {
         setTimeout(() => {
           setDone(true);
           document.body.style.overflow = "";
-        }, 300);
+        }, 150);
       },
     });
     return () => controls.stop();

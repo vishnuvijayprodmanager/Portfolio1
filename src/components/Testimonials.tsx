@@ -25,7 +25,13 @@ function ReviewCard({ t }: { t: Content["testimonials"][number] }) {
       <div className="mb-3.5 flex items-center gap-3.5">
         {t.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={t.avatar} alt={t.name} className="h-12 w-12 shrink-0 rounded-full object-cover" />
+          <img
+            src={t.avatar}
+            alt={t.name}
+            loading="lazy"
+            decoding="async"
+            className="h-12 w-12 shrink-0 rounded-full object-cover"
+          />
         ) : (
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-accent bg-[var(--amber-dim)] text-[17px] font-extrabold text-accent">
             {initials(t.name)}

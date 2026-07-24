@@ -95,7 +95,7 @@ export default function MyWorld({ content }: { content: Content }) {
             >
               {w.img ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={w.img} alt={w.cap} className="w-full rounded-xl" />
+                <img src={w.img} alt={w.cap} loading="lazy" decoding="async" className="w-full rounded-xl" />
               ) : (
                 <div className="text-[36px] leading-tight sm:text-[46px]">{w.emo}</div>
               )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { Content } from "@/lib/content";
 import { renderHighlighted } from "./Highlighted";
@@ -107,10 +108,13 @@ export default function Hero({ content }: { content: Content }) {
           <span className="absolute -top-6.5 right-1.5 font-mono text-[11px] tracking-[0.06em] text-ink-soft">
             currently building <i className="not-italic text-accent">↘</i>
           </span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/vishnu-portrait.jpg"
             alt="Pixel-art portrait of Vishnu Vijay"
+            width={440}
+            height={550}
+            priority
+            sizes="(max-width: 768px) 72vw, 420px"
             className="w-full rounded-3xl border border-line"
           />
           <span className="absolute -bottom-6.5 left-1.5 font-mono text-[11px] tracking-[0.06em] text-ink-soft">

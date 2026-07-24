@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Content } from "@/lib/content";
 
 type Msg = { text: string; from: "bot" | "me" };
@@ -107,8 +108,13 @@ export default function ChatWidget({ content }: { content: Content }) {
         >
           <div className="flex items-center justify-between border-b border-line px-4.5 py-4">
             <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/vishnu-portrait.jpg" alt="" className="h-9.5 w-9.5 rounded-full border border-accent object-cover" />
+              <Image
+                src="/images/vishnu-portrait.jpg"
+                alt=""
+                width={38}
+                height={38}
+                className="h-9.5 w-9.5 rounded-full border border-accent object-cover"
+              />
               <div>
                 <h3 className="text-sm font-extrabold">VV Assistant</h3>
                 <div className="font-mono text-[10px] tracking-[0.12em] text-accent uppercase">● Online · knows this site</div>
