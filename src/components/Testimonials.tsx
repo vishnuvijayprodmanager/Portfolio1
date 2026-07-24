@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useAnimationFrame, useReducedMotion } from "framer-motion";
 import { Content } from "@/lib/content";
+import { renderHighlighted } from "./Highlighted";
 
 function initials(name: string) {
   return name
@@ -46,7 +47,7 @@ function ReviewCard({ t }: { t: Content["testimonials"][number] }) {
       <blockquote className="text-[14.5px] leading-relaxed text-ink-soft before:mr-0.5 before:font-black before:text-accent before:content-['“']">
         {isLong && !expanded ? (
           <>
-            {short}{" "}
+            {renderHighlighted(short)}{" "}
             <button
               onClick={() => setExpanded(true)}
               className="font-mono text-[11px] tracking-[0.06em] text-accent uppercase underline underline-offset-2"
@@ -64,7 +65,7 @@ function ReviewCard({ t }: { t: Content["testimonials"][number] }) {
                     <br />
                   </>
                 )}
-                {p}
+                {renderHighlighted(p)}
               </span>
             ))}
             {isLong && (
@@ -160,7 +161,7 @@ export default function Testimonials({ content }: { content: Content }) {
       </h2>
       {testimonialsSub && (
         <p className="mt-5.5 max-w-[560px] text-[clamp(16px,1.8vw,22px)] font-medium text-ink-soft">
-          {testimonialsSub}
+          {renderHighlighted(testimonialsSub)}
         </p>
       )}
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Content } from "@/lib/content";
 import { useDeckViewer } from "./DeckViewerContext";
+import { renderHighlighted } from "./Highlighted";
 
 export default function Library({ content }: { content: Content }) {
   const { library, librarySub } = content;
@@ -21,7 +22,7 @@ export default function Library({ content }: { content: Content }) {
         </span>
         <span>library</span>
       </h2>
-      <p className="mt-5.5 max-w-[560px] text-[clamp(16px,1.8vw,22px)] font-medium text-ink-soft">{librarySub}</p>
+      <p className="mt-5.5 max-w-[560px] text-[clamp(16px,1.8vw,22px)] font-medium text-ink-soft">{renderHighlighted(librarySub)}</p>
 
       <div className="mt-8.5 flex flex-wrap gap-2">
         {cats.map((c) => (
@@ -56,7 +57,7 @@ export default function Library({ content }: { content: Content }) {
                 {d.cat}
               </span>
               <h3 className="text-[19px] leading-tight font-extrabold tracking-tight">{d.title}</h3>
-              <p className="flex-1 text-sm text-ink-soft">{d.desc}</p>
+              <p className="flex-1 text-sm text-ink-soft">{renderHighlighted(d.desc)}</p>
               <div className="flex items-center justify-between gap-2.5 border-t border-line pt-3.5">
                 <span className="font-mono text-[10px] tracking-[0.1em] text-ink-soft uppercase">
                   {d.doc ? (d.doc.type === "images" ? "Slides · view inline" : "PDF · view inline") : "Coming soon"}

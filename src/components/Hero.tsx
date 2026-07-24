@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { Content } from "@/lib/content";
+import { renderHighlighted } from "./Highlighted";
 
 export default function Hero({ content }: { content: Content }) {
   const { meta } = content;
@@ -64,7 +65,7 @@ export default function Hero({ content }: { content: Content }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: "easeOut", delay: 2.2 }}
         >
-          {meta.tagline}
+          {renderHighlighted(meta.tagline)}
         </motion.p>
 
         <motion.div

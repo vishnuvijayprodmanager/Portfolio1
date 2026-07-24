@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Content } from "@/lib/content";
+import { renderHighlighted } from "./Highlighted";
 
 export default function Approach({ content }: { content: Content }) {
   const { approach, approachSub } = content;
@@ -16,7 +17,7 @@ export default function Approach({ content }: { content: Content }) {
       </h2>
       {approachSub && (
         <p className="mt-5.5 max-w-[560px] text-[clamp(16px,1.8vw,22px)] font-medium text-ink-soft">
-          {approachSub}
+          {renderHighlighted(approachSub)}
         </p>
       )}
       <div className="mt-12 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -33,7 +34,7 @@ export default function Approach({ content }: { content: Content }) {
               0{i + 1}
             </div>
             <h3 className="mt-3 mb-2 text-lg font-extrabold tracking-tight">{a.title}</h3>
-            <p className="text-[15px] text-ink-soft">{a.description}</p>
+            <p className="text-[15px] text-ink-soft">{renderHighlighted(a.description)}</p>
           </motion.div>
         ))}
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, animate } from "framer-motion";
 import { Content } from "@/lib/content";
+import { renderHighlighted } from "./Highlighted";
 
 type Token = { text: string; emphasis: boolean; space: boolean };
 
@@ -118,7 +119,7 @@ export default function About({ content }: { content: Content }) {
       <p className="mb-4 font-mono text-[11px] tracking-[0.22em] text-accent uppercase">About me</p>
       <BigStatement raw={aboutHeading} />
       <p className="mt-5.5 max-w-[760px] text-[clamp(16px,1.6vw,20px)] font-medium text-ink-soft">
-        {aboutBody}
+        {renderHighlighted(aboutBody)}
       </p>
 
       <p className="mt-15 mb-4 font-mono text-[11px] tracking-[0.22em] text-accent uppercase">Quick facts</p>

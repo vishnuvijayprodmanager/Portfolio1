@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Content } from "@/lib/content";
+import { renderHighlighted } from "./Highlighted";
 
 type Drag =
   | { type: "pan"; sx: number; sy: number; ox: number; oy: number }
@@ -76,7 +77,7 @@ export default function MyWorld({ content }: { content: Content }) {
         </span>
         <span>world</span>
       </h2>
-      <p className="mt-4.5 text-ink-soft">{worldSub}</p>
+      <p className="mt-4.5 text-ink-soft">{renderHighlighted(worldSub)}</p>
       <p className="mt-2.5 font-mono text-[11px] tracking-[0.14em] text-accent uppercase">
         Hold and drag to move around the canvas
       </p>

@@ -4,6 +4,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Content } from "@/lib/content";
 import { useDeckViewer } from "./DeckViewerContext";
+import { renderHighlighted } from "./Highlighted";
 
 function CaseCard({ p }: { p: Content["projects"][number] }) {
   const ref = useRef<HTMLElement>(null);
@@ -26,12 +27,12 @@ function CaseCard({ p }: { p: Content["projects"][number] }) {
         {p.title}
       </h3>
       <p className="max-w-[880px] text-[clamp(17px,2vw,24px)] leading-snug font-semibold tracking-tight">
-        {p.description}
+        {renderHighlighted(p.description)}
       </p>
       <div className="mt-7 grid grid-cols-1 gap-4.5 border-t border-line pt-6 sm:grid-cols-2 sm:gap-10">
         <div>
           <h4 className="mb-2.5 font-mono text-[11px] tracking-[0.2em] text-accent uppercase">Role</h4>
-          <p className="text-[15px] text-ink-soft">{p.role}</p>
+          <p className="text-[15px] text-ink-soft">{renderHighlighted(p.role)}</p>
         </div>
         <div>
           <h4 className="mb-2.5 font-mono text-[11px] tracking-[0.2em] text-accent uppercase">Outcomes</h4>
@@ -39,7 +40,7 @@ function CaseCard({ p }: { p: Content["projects"][number] }) {
             {outcomes.map((o, i) => (
               <li key={i}>
                 <span className="text-accent">— </span>
-                {o}
+                {renderHighlighted(o)}
               </li>
             ))}
           </ul>
