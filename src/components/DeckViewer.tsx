@@ -94,27 +94,45 @@ export default function DeckViewer({
         }
 
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-        const scale = Math.min(2, (window.devicePixelRatio || 1) * 1.25);
-        const rendered: { kind: "canvas"; canvas: HTMLCanvasElement }[] = [];
-        for (let n = 1; n <= pdf.numPages; n++) {
-          if (cancelled) return;
-          const page = await pdf.getPage(n);
-          const vp = page.getViewport({ scale });
-          const canvas = document.createElement("canvas");
-          canvas.width = vp.width;
-          canvas.height = vp.height;
-          canvas.className = "w-full h-auto block";
-          const renderTask = page.render({ canvas, viewport: vp });
-          // Guard against the render promise never settling (seen in some
-          // embedded/headless canvas environments) so the UI always resolves
-          // to either slides or a clear error instead of hanging forever.
-          await Promise.race([
-            renderTask.promise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("PDF page render timed out")), 15000)),
-          ]);
-          rendered.push({ kind: "canvas", canvas });
+        // Capped lower than device pixel ratio would suggest — on image-heavy
+        // decks a 2-2.5x canvas made every page render take several seconds
+        // (worse on mobile), which is the "slides are slow to open" symptom.
+        // 1.5x is still crisp for a case-study deck viewed on screen.
+        const scale = Math.min(1.5, window.devicePixelRatio || 1);
+
+        // Render every page concurrently instead of one at a time — wall-clock
+        // time becomes "slowest page" instead of "sum of every page". A single
+        // slow or failing page is skipped rather than aborting the whole deck.
+        const results = await Promise.allSettled(
+          Array.from({ length: pdf.numPages }, async (_, i) => {
+            const page = await pdf.getPage(i + 1);
+            const vp = page.getViewport({ scale });
+            const canvas = document.createElement("canvas");
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            canvas.className = "w-full h-auto block";
+            const renderTask = page.render({ canvas, viewport: vp });
+            await Promise.race([
+              renderTask.promise,
+              new Promise((_, reject) => setTimeout(() => reject(new Error("PDF page render timed out")), 20000)),
+            ]);
+            return canvas;
+          })
+        );
+
+        if (cancelled) return;
+        const rendered = results
+          .filter((r): r is PromiseFulfilledResult<HTMLCanvasElement> => r.status === "fulfilled")
+          .map((r) => ({ kind: "canvas" as const, canvas: r.value }));
+        results
+          .filter((r) => r.status === "rejected")
+          .forEach((r) => console.error("DeckViewer page render failed:", (r as PromiseRejectedResult).reason));
+
+        if (!rendered.length) {
+          setError(true);
+        } else {
+          setPages(rendered);
         }
-        if (!cancelled) setPages(rendered);
       } catch (err) {
         console.error("DeckViewer render failed:", err);
         if (!cancelled) setError(true);
