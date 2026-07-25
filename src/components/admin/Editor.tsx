@@ -138,28 +138,34 @@ function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+// Uploads go straight to Blob storage and only the returned URL is ever
+// stored in site content — keeps the database row small and saves fast
+// regardless of how many files are attached.
+async function uploadFile(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: form });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}) as { error?: string });
+    throw new Error(err.error || "Upload failed");
+  }
+  const { url } = (await res.json()) as { url: string };
+  return url;
 }
 
 async function filesToDoc(files: File[]): Promise<DocRef | null> {
   if (!files.length) return null;
   if (files[0].type === "application/pdf") {
-    if (files[0].size > 4 * 1024 * 1024) {
-      alert("PDF over 4 MB — compress it first");
+    if (files[0].size > 8 * 1024 * 1024) {
+      alert("PDF over 8 MB — compress it first");
       return null;
     }
-    const b64 = await fileToBase64(files[0]);
-    return { type: "pdf", data: b64.split(",")[1] };
+    const url = await uploadFile(files[0]);
+    return { type: "pdf-url", url };
   }
   const pages: string[] = [];
   for (const f of files) {
-    if (f.type.startsWith("image/")) pages.push(await fileToBase64(f));
+    if (f.type.startsWith("image/")) pages.push(await uploadFile(f));
   }
   if (!pages.length) {
     alert("Pick a PDF or images");
@@ -169,9 +175,12 @@ async function filesToDoc(files: File[]): Promise<DocRef | null> {
 }
 
 function DocUpload({ doc, onChange }: { doc: DocRef | null | undefined; onChange: (d: DocRef | null) => void }) {
-  const label = doc
-    ? `File attached (${doc.type === "images" ? "images" : doc.type === "pdf-url" ? "hosted PDF" : "PDF"}) — click to replace`
-    : "⬆ Upload file — PDF (export PPT/doc as PDF) or page images";
+  const [busy, setBusy] = useState(false);
+  const label = busy
+    ? "Uploading…"
+    : doc
+      ? `File attached (${doc.type === "images" ? "images" : doc.type === "pdf-url" ? "hosted PDF" : "PDF"}) — click to replace`
+      : "⬆ Upload file — PDF (export PPT/doc as PDF) or page images";
   return (
     <div className="space-y-2">
       <label className="block cursor-pointer rounded-lg border border-dashed border-line p-4 text-center text-sm text-ink-soft hover:border-ink hover:text-ink">
@@ -179,13 +188,21 @@ function DocUpload({ doc, onChange }: { doc: DocRef | null | undefined; onChange
         <input
           type="file"
           hidden
+          disabled={busy}
           accept="application/pdf,image/*"
           multiple
           onChange={async (e) => {
             const files = [...(e.target.files || [])];
-            const d = await filesToDoc(files);
-            if (d) onChange(d);
             e.target.value = "";
+            setBusy(true);
+            try {
+              const d = await filesToDoc(files);
+              if (d) onChange(d);
+            } catch (err) {
+              alert(err instanceof Error ? err.message : "Upload failed");
+            } finally {
+              setBusy(false);
+            }
           }}
         />
       </label>
@@ -196,6 +213,58 @@ function DocUpload({ doc, onChange }: { doc: DocRef | null | undefined; onChange
           className="text-xs text-muted hover:text-accent-ink"
         >
           Remove file
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PhotoUpload({
+  photo,
+  placeholder,
+  onChange,
+}: {
+  photo: string | undefined;
+  placeholder: string;
+  onChange: (url: string | undefined) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="space-y-2">
+      <label className="block cursor-pointer rounded-lg border border-dashed border-line p-3 text-center text-sm text-ink-soft hover:border-ink hover:text-ink">
+        {busy ? "Uploading…" : photo ? "Photo attached — click to replace" : placeholder}
+        <input
+          type="file"
+          hidden
+          disabled={busy}
+          accept="image/*"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            if (f.size > 5 * 1024 * 1024) {
+              alert("Image over 5 MB — use a smaller one");
+              return;
+            }
+            setBusy(true);
+            try {
+              const url = await uploadFile(f);
+              onChange(url);
+            } catch (err) {
+              alert(err instanceof Error ? err.message : "Upload failed");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      </label>
+      {photo && (
+        <button
+          type="button"
+          onClick={() => onChange(undefined)}
+          className="text-xs text-muted hover:text-accent-ink"
+        >
+          Remove photo
         </button>
       )}
     </div>
@@ -569,35 +638,12 @@ export default function Editor({
                   <div className="mt-3">
                     <Field label="LinkedIn URL (optional)" value={t.link || ""} onChange={(v) => mutate((d) => (d.testimonials[i].link = v))} />
                   </div>
-                  <div className="mt-3 space-y-2">
-                    <label className="block cursor-pointer rounded-lg border border-dashed border-line p-3 text-center text-sm text-ink-soft hover:border-ink hover:text-ink">
-                      {t.avatar ? "Photo attached — click to replace" : "⬆ Upload photo (optional — replaces the initials)"}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const f = e.target.files?.[0];
-                          if (!f) return;
-                          if (f.size > 800 * 1024) {
-                            alert("Image over 800 KB — use a smaller one");
-                            return;
-                          }
-                          const b64 = await fileToBase64(f);
-                          mutate((d) => (d.testimonials[i].avatar = b64));
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                    {t.avatar && (
-                      <button
-                        type="button"
-                        onClick={() => mutate((d) => (d.testimonials[i].avatar = undefined))}
-                        className="text-xs text-muted hover:text-accent-ink"
-                      >
-                        Remove photo
-                      </button>
-                    )}
+                  <div className="mt-3">
+                    <PhotoUpload
+                      photo={t.avatar}
+                      placeholder="⬆ Upload photo (optional — replaces the initials)"
+                      onChange={(url) => mutate((d) => (d.testimonials[i].avatar = url))}
+                    />
                   </div>
                 </Card>
               ))}
@@ -622,35 +668,17 @@ export default function Editor({
                     <NumberField label="X position (%)" value={w.x} onChange={(v) => mutate((d) => (d.world[i].x = v))} />
                     <NumberField label="Y position (%)" value={w.y} onChange={(v) => mutate((d) => (d.world[i].y = v))} />
                   </div>
-                  <div className="mt-3 space-y-2">
-                    <label className="block cursor-pointer rounded-lg border border-dashed border-line p-3 text-center text-sm text-ink-soft hover:border-ink hover:text-ink">
-                      {w.img ? "Photo attached — click to replace" : "⬆ Upload photo (optional — replaces the emoji)"}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const f = e.target.files?.[0];
-                          if (!f) return;
-                          if (f.size > 800 * 1024) {
-                            alert("Image over 800 KB — use a smaller one");
-                            return;
-                          }
-                          const b64 = await fileToBase64(f);
-                          mutate((d) => (d.world[i].img = b64));
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                    {w.img && (
-                      <button
-                        type="button"
-                        onClick={() => mutate((d) => delete d.world[i].img)}
-                        className="text-xs text-muted hover:text-accent-ink"
-                      >
-                        Remove photo
-                      </button>
-                    )}
+                  <div className="mt-3">
+                    <PhotoUpload
+                      photo={w.img}
+                      placeholder="⬆ Upload photo (optional — replaces the emoji)"
+                      onChange={(url) =>
+                        mutate((d) => {
+                          if (url) d.world[i].img = url;
+                          else delete d.world[i].img;
+                        })
+                      }
+                    />
                   </div>
                 </Card>
               ))}
